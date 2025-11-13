@@ -92,6 +92,9 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_TIME_LIMIT = 30 # seconds
+CELERY_TASK_SOFT_TIME_LIMIT = 25
+CELERY_TASK_RETRY_DELAY = 10 # seconds
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -100,11 +103,11 @@ CELERY_TASK_SERIALIZER = 'json'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ai_notes_db',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
 
