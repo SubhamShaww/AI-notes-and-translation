@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Note
 from .serializers import NoteSerializer
-from .utils import translate_text
+from .tasks import async_translate_note
 from django.conf import settings
 
 # Create your views here.
@@ -13,49 +13,39 @@ class NoteViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 def translate_note(request, note_id):
-    try:
-        note = Note.objects.get(id=note_id)
-    except Note.DoesNotExist:
-        return Response({"error": "Note not found."}, status=status.HTTP_404_NOT_FOUND) 
+    target_lang = request.data.get('target_lang', 'hi')
+    async_translate_note.delay(note_id, target_lang)
+    return Response({
+        "message": "Translation job submitted",
+        "note_id": note_id,
+        "target_language": target_lang
+    }, status=status.HTTP_202_ACCEPTED)
 
-    target_lang = request.data.get('target_lang', 'hi') # default to Hindi
+@api_view(['GET'])
+def get_translated_note(request, note_id):
+    target_lang = request.query_params.get('lang', 'hi')
     cached_key = f"translation:{note_id}:{target_lang}"
 
-    # check Redis cache
     cached_translation = settings.redis_client.get(cached_key)
     if cached_translation:
         return Response({
-            "original": {
-                "text": note.text,
-                "language": note.language
-            },
-            "translated": {
-                "text": cached_translation.decode('utf-8'),
-                "language": target_lang
-            },
+            "note_id": note_id,
+            "translated_text": cached_translation.decode('utf-8'),
+            "language": target_lang,
             "cached": True
         })
-
-    # perform translation
-    translated = translate_text(note.text, source_lang=note.language, target_lang=target_lang)
-    if translated:
-        note.translated_text = translated
-        note.traslated_language = target_lang
-        note.save()
-
-        # store in Redis cache (with 1hr expiration)
-        settings.redis_client.setex(cached_key, 3600, translated)
-
-        return Response({
-            "original": {
-                "text": note.text,
-                "language": note.language
-            },
-            "translated": {
-                "text": translated,
-                "language": target_lang
-            },
-            "cached": False
-        })
-    else:
-        return Response({"error": "Translation failed."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    try:
+        note = Note.objects.get(id=note_id)
+        if note.traslated_language == target_lang:
+            return Response({
+                "note_id": note.id,
+                "translated_text": note.translated_text,
+                "language": target_lang,
+                "cached": False
+            })
+        else:
+            return Response({"message": "Translation not ready."}, status=status.HTTP_202_ACCEPTED)
+    except Note.DoesNotExist:
+        return Response({"error": "Note not found."}, status=status.HTTP_404_NOT_FOUND)
+    
