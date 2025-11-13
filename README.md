@@ -4,7 +4,7 @@ A scalable Django-based backend service for managing notes, translating them asy
 
 ---
 
-## Features
+## 🚀 Features
 
 - 📃 CRUD APIs for notes
 - 🌐 `/translate/<note_id>/` endpoint using LibreTranslate
@@ -13,6 +13,19 @@ A scalable Django-based backend service for managing notes, translating them asy
 - 📊 `/stats/` endpoint for analytics
 - 🔒 JWT authentication for secure access
 - 🐳 Dockerized with PostgreSQL
+
+## 🧱 Tech Stack
+
+| Layer         | Tools & Frameworks                          |
+|---------------|---------------------------------------------|
+| Backend       | Django, Django REST Framework               |
+| Async Tasks   | Celery + Redis                              |
+| Database      | PostgreSQL                                  |
+| Caching       | Redis                                       |
+| Auth          | JWT (SimpleJWT)                             |
+| Translation   | LibreTranslate API                          |
+| Deployment    | Docker, Docker Compose                      |
+
 
 ## 🧭 Project Roadmap
 
@@ -71,6 +84,8 @@ Include:
       created_at = models.DateTimeField(auto_now_add=True)
   ```
 - APIs:
+  - base url prefix: `{url}/api/`
+  - `POST /token/`
   - `POST /notes/`
   - `GET /notes/`, `GET /notes/<id>/`
   - `PUT /notes/<id>/`, `DELETE /notes/<id>/`
