@@ -1,4 +1,20 @@
-## 🧭 Project Roadmap: AI Notes & Translation Microservice
+# 🧠 AI Notes & Translation Microservice
+
+A scalable Django-based backend service for managing notes, translating them asynchronously, and tracking analytics - built with Redis, Celery, PostgreSQL and Docker.
+
+---
+
+## Features
+
+- 📃 CRUD APIs for notes
+- 🌐 `/translate/<note_id>/` endpoint using LibreTranslate
+- ⚡ Async translation jobs via Celery + Redis
+- 🧠 Redis caching for recent translations
+- 📊 `/stats/` endpoint for analytics
+- 🔒 JWT authentication for secure access
+- 🐳 Dockerized with PostgreSQL
+
+## 🧭 Project Roadmap
 
 ### 📄 Phase 1: Documentation
 
@@ -59,6 +75,7 @@ Include:
   - `GET /notes/`, `GET /notes/<id>/`
   - `PUT /notes/<id>/`, `DELETE /notes/<id>/`
   - `POST /translate/<id>/`
+  - `GET /translated/<id>/`
   - `GET /stats/`
   - `GET /graphql/` (optional)
 
@@ -79,8 +96,8 @@ Include:
 
 #### 🔸 Enhancements
 - JWT Auth using `djangorestframework-simplejwt`
-- GraphQL endpoint using `graphene-django`
-- Prometheus metrics via `django-prometheus`
+- GraphQL endpoint using `graphene-django` (optional)
+- Prometheus metrics via `django-prometheus` (optional)
 
 ---
 
@@ -103,7 +120,7 @@ Include:
 
 ### 📊 Phase 6: Monitoring & Observability
 
-- Prometheus + Grafana setup
+- Prometheus + Grafana setup (optional)
 - Track:
   - API latency
   - Translation job success/failure
