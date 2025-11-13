@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import JWTAuthentication
 from .models import Note
 from .serializers import NoteSerializer
 from .tasks import async_translate_note
@@ -11,8 +13,12 @@ from django.db.models import Count
 class NoteViewSet(viewsets.ModelViewSet):
     queryset = Note.objects.all().order_by('-created_at')
     serializer_class = NoteSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def translate_note(request, note_id):
     target_lang = request.data.get('target_lang', 'hi')
     async_translate_note.delay(note_id, target_lang)
@@ -23,6 +29,8 @@ def translate_note(request, note_id):
     }, status=status.HTTP_202_ACCEPTED)
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_translated_note(request, note_id):
     target_lang = request.query_params.get('lang', 'hi')
     cached_key = f"translation:{note_id}:{target_lang}"
@@ -51,6 +59,8 @@ def get_translated_note(request, note_id):
         return Response({"error": "Note not found."}, status=status.HTTP_404_NOT_FOUND)
     
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_stats(request):
     total_notes = Note.objects.count()
     translated_notes = Note.objects.exclude(translated_text__isnull=True).count()

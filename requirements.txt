@@ -12,11 +12,13 @@ colorama==0.4.6
 Django==5.2.8
 django-cors-headers==4.9.0
 djangorestframework==3.16.1
+djangorestframework_simplejwt==5.5.1
 idna==3.11
 kombu==5.5.4
 packaging==25.0
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.11
+PyJWT==2.10.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 redis==7.0.1
