@@ -5,6 +5,7 @@ from .models import Note
 from .serializers import NoteSerializer
 from .tasks import async_translate_note
 from django.conf import settings
+from django.db.models import Count
 
 # Create your views here.
 class NoteViewSet(viewsets.ModelViewSet):
@@ -49,3 +50,17 @@ def get_translated_note(request, note_id):
     except Note.DoesNotExist:
         return Response({"error": "Note not found."}, status=status.HTTP_404_NOT_FOUND)
     
+@api_view(['GET'])
+def get_stats(request):
+    total_notes = Note.objects.count()
+    translated_notes = Note.objects.exclude(translated_text__isnull=True).count()
+
+    original_langs = Note.objects.values('language').annotate(count=Count('id'))
+    translated_langs = Note.objects.values('translated_language').exclude(translated_language__isnull=True).annotate(count=Count('id'))
+
+    return Response({
+        "total_notes": total_notes,
+        "translated_notes": translated_notes,
+        "original_language_distribution": {entry['language']: entry['count'] for entry in original_langs},
+        "translated_language_distribution": {entry['translated_language']: entry['count'] for entry in translated_langs}
+    })
