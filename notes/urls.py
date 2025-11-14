@@ -1,5 +1,5 @@
 from django.urls import path, include
-from rest_framework import DefaultRouter
+from rest_framework.routers import DefaultRouter
 from .views import NoteViewSet, translate_note, get_translated_note, get_stats
 
 router = DefaultRouter()

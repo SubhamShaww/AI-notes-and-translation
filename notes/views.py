@@ -2,12 +2,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import JWTAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.db.models import Count
 from .models import Note
 from .serializers import NoteSerializer
 from .tasks import async_translate_note
-from django.conf import settings
-from django.db.models import Count
+from .redis_client import redis_client
 
 # Create your views here.
 class NoteViewSet(viewsets.ModelViewSet):
@@ -35,7 +35,7 @@ def get_translated_note(request, note_id):
     target_lang = request.query_params.get('lang', 'hi')
     cached_key = f"translation:{note_id}:{target_lang}"
 
-    cached_translation = settings.redis_client.get(cached_key)
+    cached_translation = redis_client.get(cached_key)
     if cached_translation:
         return Response({
             "note_id": note_id,
@@ -46,7 +46,7 @@ def get_translated_note(request, note_id):
     
     try:
         note = Note.objects.get(id=note_id)
-        if note.traslated_language == target_lang:
+        if note.translated_language == target_lang:
             return Response({
                 "note_id": note.id,
                 "translated_text": note.translated_text,
